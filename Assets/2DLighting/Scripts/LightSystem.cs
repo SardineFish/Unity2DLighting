@@ -28,14 +28,6 @@ namespace Lighting2D
 
         }
 
-        private void OnWillRenderObject()
-        {
-            return;
-            var camera = Camera.current;
-            var profile = SetupCamera(camera);
-            RenderDeffer(profile);
-        }
-
         public Light2DProfile SetupCamera(Camera camera)
         {
             if (!commandBuffers.ContainsKey(camera))
@@ -114,39 +106,6 @@ namespace Lighting2D
             cmd.ReleaseTemporaryRT(diffuse);
 
             cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
-        }
-
-        public void DeferredImageLighting(RenderTexture diffuse, RenderTexture target)
-        {
-            var cmd = new CommandBuffer();
-
-            var shadowMap = Shader.PropertyToID("_ShadowMap");
-            var lightMap = Shader.PropertyToID("_LightMap");
-            cmd.GetTemporaryRT(lightMap, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
-            cmd.GetTemporaryRT(shadowMap, -1, -1);
-
-            cmd.SetRenderTarget(lightMap, lightMap);
-            cmd.ClearRenderTarget(true, true, Color.black);
-
-            var lights = GameObject.FindObjectsOfType<Light2D>();
-            foreach (var light in lights)
-            {
-                cmd.SetRenderTarget(shadowMap);
-                cmd.ClearRenderTarget(true, true, Color.white);
-                if (light.LightShadows != LightShadows.None)
-                {
-                    light.RenderShadow(cmd);
-                }
-                cmd.SetRenderTarget(lightMap);
-                light.RenderLight(cmd);
-            }
-
-            cmd.Blit(diffuse, target, LightingMaterial, 0);
-            cmd.ReleaseTemporaryRT(shadowMap);
-            cmd.ReleaseTemporaryRT(lightMap);
-            cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.CameraTarget);
-
-            Graphics.ExecuteCommandBuffer(cmd);
         }
     }
 
