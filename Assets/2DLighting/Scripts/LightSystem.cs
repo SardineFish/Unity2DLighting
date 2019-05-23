@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Rendering;
+using System.Linq;
 
 namespace Lighting2D
 {
@@ -29,6 +30,7 @@ namespace Lighting2D
 
         private void OnWillRenderObject()
         {
+            return;
             var camera = Camera.current;
             var profile = SetupCamera(camera);
             RenderDeffer(profile);
@@ -45,6 +47,7 @@ namespace Lighting2D
                     CommandBuffer = new CommandBuffer(),
                     LightMap = new RenderTexture(camera.pixelWidth, camera.pixelHeight, 0, RenderTextureFormat.ARGBFloat),
                 };
+                profile.LightMap.antiAliasing = 1;
                 commandBuffers[camera] = profile;
                 profile.CommandBuffer.name = "2D Lighting";
                 profile.LightMap.name = "Light Map";
@@ -55,17 +58,28 @@ namespace Lighting2D
 
         public void RenderDeffer(Light2DProfile profile)
         {
-
+            
             var camera = profile.Camera;
             var cmd = profile.CommandBuffer;
             cmd.Clear();
 
             // !IMPORTANT! to prevent blit image upside down
+            // STUPID UNITY
             var useMSAA = profile.Camera.allowMSAA && QualitySettings.antiAliasing > 0 ? 1 : 0;
             cmd.SetGlobalInt("_UseMSAA", useMSAA);
+#if UNITY_EDITOR
+            if (UnityEditor.SceneView.GetAllSceneCameras().Any(cmr => cmr == Camera.current))
+            {
+                cmd.SetGlobalInt("_SceneView", 1);
+            }
+            else
+            {
+                cmd.SetGlobalInt("_SceneView", 0);
+            }
+#endif
 
             var diffuse = Shader.PropertyToID("_Diffuse");
-            cmd.GetTemporaryRT(diffuse, -1, -1);
+            cmd.GetTemporaryRT(diffuse, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 1);
             cmd.Blit(BuiltinRenderTextureType.CameraTarget, diffuse);
 
             var shadowMap = Shader.PropertyToID("_ShadowMap");
@@ -100,6 +114,39 @@ namespace Lighting2D
             cmd.ReleaseTemporaryRT(diffuse);
 
             cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
+        }
+
+        public void DeferredImageLighting(RenderTexture diffuse, RenderTexture target)
+        {
+            var cmd = new CommandBuffer();
+
+            var shadowMap = Shader.PropertyToID("_ShadowMap");
+            var lightMap = Shader.PropertyToID("_LightMap");
+            cmd.GetTemporaryRT(lightMap, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
+            cmd.GetTemporaryRT(shadowMap, -1, -1);
+
+            cmd.SetRenderTarget(lightMap, lightMap);
+            cmd.ClearRenderTarget(true, true, Color.black);
+
+            var lights = GameObject.FindObjectsOfType<Light2D>();
+            foreach (var light in lights)
+            {
+                cmd.SetRenderTarget(shadowMap);
+                cmd.ClearRenderTarget(true, true, Color.white);
+                if (light.LightShadows != LightShadows.None)
+                {
+                    light.RenderShadow(cmd);
+                }
+                cmd.SetRenderTarget(lightMap);
+                light.RenderLight(cmd);
+            }
+
+            cmd.Blit(diffuse, target, LightingMaterial, 0);
+            cmd.ReleaseTemporaryRT(shadowMap);
+            cmd.ReleaseTemporaryRT(lightMap);
+            cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.CameraTarget);
+
+            Graphics.ExecuteCommandBuffer(cmd);
         }
     }
 

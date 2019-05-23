@@ -8,7 +8,7 @@ Shader "Lighting2D/DeferredLighting"
 		_TestTex ("Test Texture", 2D) = "white" {}
 	}
 
-	// #0 Mix light map
+	// #0 Deferred lighting
 	SubShader
 	{
 		Tags
@@ -38,8 +38,11 @@ Shader "Lighting2D/DeferredLighting"
 				float2 texcoord  : TEXCOORD0;
 			};
             sampler2D _MainTex;
-			float4 _MainTex_ST;
+			float4 _MainTex_TexelSize;
 			sampler2D _LightMap;
+
+			int _UseMSAA;
+			int _SceneView;
 
 			v2f vert(appdata_base v)
 			{
@@ -52,10 +55,12 @@ Shader "Lighting2D/DeferredLighting"
 			fixed4 frag(v2f i) : SV_Target
 			{
 				float2 uv = i.texcoord;
-			#if UNITY_UV_STARTS_AT_TOP
-				if (_MainTex_ST.y < 0)
-				        uv.y = 1 - uv.y;
+				
+			#if SHADER_API_D3D11
+				if(!_SceneView && !_UseMSAA)
+				 	uv.y = 1 - uv.y;
 			#endif
+
 				float3 ambient = UNITY_LIGHTMODEL_AMBIENT;
                 float3 color = tex2D(_LightMap, i.texcoord).rgb * tex2D(_MainTex, uv).rgb;
 				return fixed4(color, 1.0);
