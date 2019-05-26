@@ -62,7 +62,8 @@ Shader "Lighting2D/DeferredLighting"
 			#endif
 
 				float3 ambient = UNITY_LIGHTMODEL_AMBIENT;
-                float3 color = tex2D(_LightMap, i.texcoord).rgb * tex2D(_MainTex, uv).rgb;
+				float3 light = ambient + tex2D(_LightMap, i.texcoord).rgb;
+                float3 color = light * tex2D(_MainTex, uv).rgb;
 				return fixed4(color, 1.0);
 			}
 		ENDCG

@@ -4,16 +4,31 @@ using UnityEngine.Rendering;
 
 namespace Lighting2D
 {
+    public enum LightType
+    {
+        Analytical,
+        Textured,
+    }
     [ExecuteInEditMode]
     public class Light2D : Light2DBase
     {
+        public LightType LightType = LightType.Analytical;
+        [Range(-1, 1)]
+        public float Attenuation = 0;
+        public Color LightColor = Color.white;
         public float Intensity = 1;
-        public float Range = 5;
+        public Texture LightTexture;
         public Mesh Mesh;
-        public Material LightMaterial;
+        private Material LightMaterial;
+
+        void Reset()
+        {
+            LightMaterial = new Material(Shader.Find("Lighting2D/2DLight"));
+        }
         private void Awake()
         {
-            var halfRange = Range / 2;
+            Reset();
+            var halfRange = LightSize / 2;
             Mesh = new Mesh();
             Mesh.vertices = new Vector3[]
             {
@@ -37,11 +52,6 @@ namespace Lighting2D
             };
             Mesh.MarkDynamic();
         }
-        // Use this for initialization
-        void Start()
-        {
-
-        }
 
         // Update is called once per frame
         void Update()
@@ -53,10 +63,10 @@ namespace Lighting2D
         {
             Mesh.vertices = new Vector3[]
             {
-                new Vector3(-Range, -Range, 0),
-                new Vector3(Range, -Range, 0),
-                new Vector3(-Range, Range, 0),
-                new Vector3(Range, Range, 0),
+                new Vector3(-LightSize, -LightSize, 0),
+                new Vector3(LightSize, -LightSize, 0),
+                new Vector3(-LightSize, LightSize, 0),
+                new Vector3(LightSize, LightSize, 0),
             };
         }
 
@@ -64,11 +74,24 @@ namespace Lighting2D
         {
             if (!LightMaterial)
                 LightMaterial = new Material(Shader.Find("Lighting2D/AnalyticLight"));
+            LightMaterial.SetTexture("_MainTex", LightTexture);
+            LightMaterial.SetColor("_Color", LightColor);
+            LightMaterial.SetFloat("_Attenuation", Attenuation);
+            LightMaterial.SetFloat("_Intensity", Intensity);
+
             cmd.SetGlobalVector("_2DLightPos", transform.position);
-            cmd.SetGlobalFloat("_LightRange", Range);
+            cmd.SetGlobalFloat("_LightRange", LightSize);
             cmd.SetGlobalFloat("_Intensity", Intensity);
             var trs = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
-            cmd.DrawMesh(Mesh, trs, LightMaterial);
+            switch(LightType)
+            {
+                case LightType.Analytical:
+                    cmd.DrawMesh(Mesh, trs, LightMaterial, 0, 0);
+                    break;
+                case LightType.Textured:
+                    cmd.DrawMesh(Mesh, trs, LightMaterial, 0, 1);
+                    break;
+            }
         }
     }
 }

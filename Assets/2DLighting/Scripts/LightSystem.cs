@@ -96,16 +96,12 @@ namespace Lighting2D
                 light.RenderLight(cmd);
             }
 
-            cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.CameraTarget);
-
-            cmd.Blit(BuiltinRenderTextureType.CameraTarget, shadowMap);
-
             cmd.SetGlobalTexture("_LightMap", lightMap);
             cmd.Blit(diffuse, BuiltinRenderTextureType.CameraTarget, LightingMaterial, 0);
+
             cmd.ReleaseTemporaryRT(shadowMap);
             cmd.ReleaseTemporaryRT(diffuse);
-
-            cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
+            cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.CameraTarget);
         }
     }
 

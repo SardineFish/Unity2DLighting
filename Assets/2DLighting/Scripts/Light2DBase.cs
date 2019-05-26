@@ -10,9 +10,11 @@ namespace Lighting2D
     public abstract class Light2DBase : MonoBehaviour
     {
         public LightShadows LightShadows = LightShadows.None;
-        public float ShadowRange = 20;
-        public float LightSize = 1;
+        public float LightVolumn = 1;
+        public float LightSize = 20;
         public abstract void RenderLight(CommandBuffer cmd);
+
+        public bool DebugLight;
 
         [SerializeField]
         private bool DebugShadow = false;
@@ -53,16 +55,16 @@ namespace Lighting2D
             var points = pol.GetPath(0);
             var z = new Vector3(0, 0, 1);
             MeshBuilder meshBuilder = new MeshBuilder(5 * points.Length, 3 * points.Length);
-            var R_2 = Mathf.Pow(ShadowRange, 2);
-            var r_2 = Mathf.Pow(LightSize, 2);
+            var R_2 = Mathf.Pow(LightSize, 2);
+            var r_2 = Mathf.Pow(LightVolumn, 2);
             for (var i = 0; i < points.Length; i++)
             {
                 // transform points from collider space to light space
                 Vector3 p0 = transform.worldToLocalMatrix.MultiplyPoint(pol.transform.localToWorldMatrix.MultiplyPoint(points[(i + 1) % points.Length]));
                 Vector3 p1 = transform.worldToLocalMatrix.MultiplyPoint(pol.transform.localToWorldMatrix.MultiplyPoint(points[i]));
                 p0.z = p1.z = 0;
-                var ang0 = Mathf.Asin(LightSize / p0.magnitude); // Angle between lightDir & tangent of light circle
-                var ang1 = Mathf.Asin(LightSize / p1.magnitude); // Angle between lightDir & tangent of light circle
+                var ang0 = Mathf.Asin(LightVolumn / p0.magnitude); // Angle between lightDir & tangent of light circle
+                var ang1 = Mathf.Asin(LightVolumn / p1.magnitude); // Angle between lightDir & tangent of light circle
                 Vector3 shadowA = MathUtility.Rotate(p0, -ang0).normalized * (Mathf.Sqrt(R_2 - r_2) - p0.magnitude * Mathf.Cos(ang0));
                 Vector3 shadowB = MathUtility.Rotate(p1, ang1).normalized * (Mathf.Sqrt(R_2 - r_2) - p1.magnitude * Mathf.Cos(ang1));
                 shadowA += p0;
@@ -166,7 +168,7 @@ namespace Lighting2D
             //subShadowMesh.ForEach(mesh => mesh.Clear());
             //subShadowMesh.Clear();
             var meshBuilder = new MeshBuilder();
-            int count = Physics2D.OverlapCircleNonAlloc(transform.position, ShadowRange, shadowCasters);
+            int count = Physics2D.OverlapCircleNonAlloc(transform.position, LightSize, shadowCasters);
             CombineInstance[] combineArr = new CombineInstance[count];
             for (var i = 0; i < count; i++)
             {
@@ -186,10 +188,13 @@ namespace Lighting2D
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, LightSize);
-            Gizmos.color = Color.gray;
-            Gizmos.DrawWireSphere(transform.position, ShadowRange);
+            if(DebugLight)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireSphere(transform.position, LightVolumn);
+                Gizmos.color = Color.gray;
+                Gizmos.DrawWireSphere(transform.position, LightSize);
+            }
         }
     }
 }
