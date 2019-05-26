@@ -10,14 +10,16 @@ namespace Lighting2D
     [RequireComponent(typeof(MeshRenderer))]
     public class LightSystem : Singleton<LightSystem>
     {
+        public bool PreviewInInspector = true;
+        public float ExposureLimit = -1;
         public Material LightingMaterial;
-        Dictionary<Camera, Light2DProfile> commandBuffers = new Dictionary<Camera, Light2DProfile>();
+        Dictionary<Camera, Light2DProfile> cameraProfiles = new Dictionary<Camera, Light2DProfile>();
         public int BloomIteration = 2;
 
         // Use this for initialization
         void Start()
         {
-            commandBuffers = new Dictionary<Camera, Light2DProfile>();
+            cameraProfiles = new Dictionary<Camera, Light2DProfile>();
             if (!LightingMaterial)
                 LightingMaterial = new Material(Shader.Find("Lighting2D/DeferredLighting"));
         }
@@ -30,7 +32,7 @@ namespace Lighting2D
 
         public Light2DProfile SetupCamera(Camera camera)
         {
-            if (!commandBuffers.ContainsKey(camera))
+            if (!cameraProfiles.ContainsKey(camera))
             {
                 camera.RemoveAllCommandBuffers();
                 var profile = new Light2DProfile()
@@ -40,12 +42,12 @@ namespace Lighting2D
                     LightMap = new RenderTexture(camera.pixelWidth, camera.pixelHeight, 0, RenderTextureFormat.ARGBFloat),
                 };
                 profile.LightMap.antiAliasing = 1;
-                commandBuffers[camera] = profile;
+                cameraProfiles[camera] = profile;
                 profile.CommandBuffer.name = "2D Lighting";
                 profile.LightMap.name = "Light Map";
                 camera.AddCommandBuffer(CameraEvent.BeforeImageEffects, profile.CommandBuffer);
             }
-            return commandBuffers[camera];
+            return cameraProfiles[camera];
         }
 
         public void RenderDeffer(Light2DProfile profile)
@@ -60,8 +62,11 @@ namespace Lighting2D
             var useMSAA = profile.Camera.allowMSAA && QualitySettings.antiAliasing > 0 ? 1 : 0;
             cmd.SetGlobalInt("_UseMSAA", useMSAA);
 #if UNITY_EDITOR
-            if (UnityEditor.SceneView.GetAllSceneCameras().Any(cmr => cmr == Camera.current))
+            // In SceneView
+            if (UnityEditor.SceneView.GetAllSceneCameras().Any(cmr => cmr == camera))
             {
+                if (!PreviewInInspector)
+                    return;
                 cmd.SetGlobalInt("_SceneView", 1);
             }
             else
@@ -96,6 +101,7 @@ namespace Lighting2D
                 light.RenderLight(cmd);
             }
 
+            cmd.SetGlobalFloat("_ExposureLimit", ExposureLimit);
             cmd.SetGlobalTexture("_LightMap", lightMap);
             cmd.Blit(diffuse, BuiltinRenderTextureType.CameraTarget, LightingMaterial, 0);
 

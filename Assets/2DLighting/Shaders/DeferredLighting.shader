@@ -41,6 +41,8 @@ Shader "Lighting2D/DeferredLighting"
 			float4 _MainTex_TexelSize;
 			sampler2D _LightMap;
 
+			float _ExposureLimit;
+
 			int _UseMSAA;
 			int _SceneView;
 
@@ -63,6 +65,8 @@ Shader "Lighting2D/DeferredLighting"
 
 				float3 ambient = UNITY_LIGHTMODEL_AMBIENT;
 				float3 light = ambient + tex2D(_LightMap, i.texcoord).rgb;
+				if(_ExposureLimit >= 0)
+					light = clamp(light, 0, _ExposureLimit);
                 float3 color = light * tex2D(_MainTex, uv).rgb;
 				return fixed4(color, 1.0);
 			}

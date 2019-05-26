@@ -142,6 +142,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8d72b2f25957114c93f17e5b75f0a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PreviewInInspector: 1
+  ExposureLimit: 1
   LightingMaterial: {fileID: 2100000, guid: af8826e0179e03d4a841d8c97a553cf4, type: 2}
   BloomIteration: 2
 --- !u!23 &20894938
@@ -285,7 +287,7 @@ MonoBehaviour:
   DebugShadow: 0
   LightType: 1
   Attenuation: 0
-  LightColor: {r: 1, g: 0.9817619, b: 0.8254717, a: 1}
+  LightColor: {r: 0.8726415, g: 0.9720274, b: 1, a: 1}
   Intensity: 1
   LightTexture: {fileID: 2800000, guid: 1a30b8c9671ad4145b55be605b43b375, type: 3}
   Mesh: {fileID: 669397631}
@@ -297,7 +299,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 199770044}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.12, y: -2.06, z: -0.825073}
+  m_LocalPosition: {x: -0.5, y: 1.06, z: -0.825073}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
