@@ -15,6 +15,11 @@ namespace Lighting2D
         public Material LightingMaterial;
         Dictionary<Camera, Light2DProfile> cameraProfiles = new Dictionary<Camera, Light2DProfile>();
         public int BloomIteration = 2;
+        public int LightMapResolutionScale = 1;
+        public int ShadowMapResolutionScale = 1;
+        public FilterMode ShadowMapFilterMode = FilterMode.Bilinear;
+
+        public Material gaussianMat;
 
         // Use this for initialization
         void Start()
@@ -30,6 +35,12 @@ namespace Lighting2D
 
         }
 
+        [EditorButton("Reset")]
+        public void Reset()
+        {
+            cameraProfiles.Clear();
+        }
+
         public Light2DProfile SetupCamera(Camera camera)
         {
             if (!cameraProfiles.ContainsKey(camera))
@@ -39,8 +50,9 @@ namespace Lighting2D
                 {
                     Camera = camera,
                     CommandBuffer = new CommandBuffer(),
-                    LightMap = new RenderTexture(camera.pixelWidth, camera.pixelHeight, 0, RenderTextureFormat.ARGBFloat),
+                    LightMap = new RenderTexture(camera.pixelWidth / LightMapResolutionScale, camera.pixelHeight / LightMapResolutionScale, 0, RenderTextureFormat.ARGBFloat),
                 };
+                profile.LightMap.filterMode = FilterMode.Point;
                 profile.LightMap.antiAliasing = 1;
                 cameraProfiles[camera] = profile;
                 profile.CommandBuffer.name = "2D Lighting";
@@ -84,7 +96,7 @@ namespace Lighting2D
             cmd.SetRenderTarget(lightMap, lightMap);
             cmd.ClearRenderTarget(true, true, Color.black);
 
-            cmd.GetTemporaryRT(shadowMap, -1, -1);
+            cmd.GetTemporaryRT(shadowMap, camera.pixelWidth / ShadowMapResolutionScale, camera.pixelHeight / ShadowMapResolutionScale, 0, ShadowMapFilterMode);
 
             cmd.SetRenderTarget(shadowMap);
 
@@ -104,6 +116,8 @@ namespace Lighting2D
             cmd.SetGlobalFloat("_ExposureLimit", ExposureLimit);
             cmd.SetGlobalTexture("_LightMap", lightMap);
             cmd.Blit(diffuse, BuiltinRenderTextureType.CameraTarget, LightingMaterial, 0);
+
+            GaussianBlur.Blur(cmd, diffuse, BuiltinRenderTextureType.CameraTarget, gaussianMat);
 
             cmd.ReleaseTemporaryRT(shadowMap);
             cmd.ReleaseTemporaryRT(diffuse);

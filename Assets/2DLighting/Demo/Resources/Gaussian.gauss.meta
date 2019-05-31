@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: e50b9d3f6352af34fb42208087c617cd
+ScriptedImporter:
+  fileIDToRecycleName:
+    2800000: Texture2D
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: ffa003f36e26a484b916593e4261b50b, type: 3}
