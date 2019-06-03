@@ -28,7 +28,7 @@ namespace Lighting2D
         private void Awake()
         {
             Reset();
-            var halfRange = LightSize / 2;
+            var halfRange = LightDistance / 2;
             Mesh = new Mesh();
             Mesh.vertices = new Vector3[]
             {
@@ -63,10 +63,10 @@ namespace Lighting2D
         {
             Mesh.vertices = new Vector3[]
             {
-                new Vector3(-LightSize, -LightSize, 0),
-                new Vector3(LightSize, -LightSize, 0),
-                new Vector3(-LightSize, LightSize, 0),
-                new Vector3(LightSize, LightSize, 0),
+                new Vector3(-LightDistance, -LightDistance, 0),
+                new Vector3(LightDistance, -LightDistance, 0),
+                new Vector3(-LightDistance, LightDistance, 0),
+                new Vector3(LightDistance, LightDistance, 0),
             };
         }
 
@@ -80,7 +80,7 @@ namespace Lighting2D
             LightMaterial.SetFloat("_Intensity", Intensity);
 
             cmd.SetGlobalVector("_2DLightPos", transform.position);
-            cmd.SetGlobalFloat("_LightRange", LightSize);
+            cmd.SetGlobalFloat("_LightRange", LightDistance);
             cmd.SetGlobalFloat("_Intensity", Intensity);
             var trs = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
             switch(LightType)

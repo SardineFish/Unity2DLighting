@@ -69,6 +69,8 @@ namespace Lighting2D
             var cmd = profile.CommandBuffer;
             cmd.Clear();
 
+            cmd.BeginSample("2D Lighting");
+
             // !IMPORTANT! to prevent blit image upside down
             // STUPID UNITY
             var useMSAA = profile.Camera.allowMSAA && QualitySettings.antiAliasing > 0 ? 1 : 0;
@@ -104,10 +106,10 @@ namespace Lighting2D
             foreach (var light in lights)
             {
                 cmd.SetRenderTarget(shadowMap);
-                cmd.ClearRenderTarget(true, true, Color.white);
+                cmd.ClearRenderTarget(true, true, Color.black);
                 if(light.LightShadows != LightShadows.None)
                 {
-                    light.RenderShadow(cmd);
+                    light.RenderShadow(cmd, shadowMap);
                 }
                 cmd.SetRenderTarget(lightMap);
                 light.RenderLight(cmd);
@@ -117,11 +119,11 @@ namespace Lighting2D
             cmd.SetGlobalTexture("_LightMap", lightMap);
             cmd.Blit(diffuse, BuiltinRenderTextureType.CameraTarget, LightingMaterial, 0);
 
-            GaussianBlur.Blur(cmd, diffuse, BuiltinRenderTextureType.CameraTarget, gaussianMat);
-
             cmd.ReleaseTemporaryRT(shadowMap);
             cmd.ReleaseTemporaryRT(diffuse);
             cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.CameraTarget);
+            // GaussianBlur.Blur(256, cmd, BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.CameraTarget, gaussianMat);
+            cmd.EndSample("2D Lighting");
         }
     }
 

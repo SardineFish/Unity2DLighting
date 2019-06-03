@@ -7,11 +7,20 @@ using System.Linq;
 
 namespace Lighting2D
 {
+    public enum ShadowSmooth
+    {
+        Blur,
+        DownSample,
+        VolumnLight,
+    }
     public abstract class Light2DBase : MonoBehaviour
     {
         public LightShadows LightShadows = LightShadows.None;
+        public ShadowSmooth ShadowSmooth = ShadowSmooth.Blur;
+        [Range(1, 64)]
+        public int SmoothRadius;
         public float LightVolumn = 1;
-        public float LightSize = 20;
+        public float LightDistance = 20;
         public abstract void RenderLight(CommandBuffer cmd);
 
         public bool DebugLight;
@@ -50,12 +59,13 @@ namespace Lighting2D
         }
 
         Mesh tempMesh;
+        // See https://www.geogebra.org/graphing/keskajgx 
         public Mesh PolygonShadowMesh(PolygonCollider2D pol)
         {
             var points = pol.GetPath(0);
             var z = new Vector3(0, 0, 1);
             MeshBuilder meshBuilder = new MeshBuilder(5 * points.Length, 3 * points.Length);
-            var R_2 = Mathf.Pow(LightSize, 2);
+            var R_2 = Mathf.Pow(LightDistance, 2);
             var r_2 = Mathf.Pow(LightVolumn, 2);
             for (var i = 0; i < points.Length; i++)
             {
@@ -69,19 +79,24 @@ namespace Lighting2D
                 Vector3 shadowB = MathUtility.Rotate(p1, ang1).normalized * (Mathf.Sqrt(R_2 - r_2) - p1.magnitude * Mathf.Cos(ang1));
                 shadowA += p0;
                 shadowB += p1;
-                var OC = (shadowA + shadowB) / 2;
-                Vector3 shadowR = OC.normalized * (R_2 / OC.magnitude);
-                Vector3 normal = Vector3.Cross(z, p1 - p0);
 
                 int meshType = 0;
                 if (Vector3.Cross(p1 - p0, shadowB - p1).z >= 0)
                 {
                     meshType |= 1;
+                    shadowB = MathUtility.Rotate(p0, ang0).normalized * (Mathf.Sqrt(R_2 - r_2) - p0.magnitude * Mathf.Cos(ang0));
+                    shadowB += p0;
                 }
                 if(Vector3.Cross(p0 - shadowA, p1 - p0).z >=0)
                 {
                     meshType |= 2;
+                    shadowA = MathUtility.Rotate(p1, -ang1).normalized * (Mathf.Sqrt(R_2 - r_2) - p1.magnitude * Mathf.Cos(ang1));
+                    shadowA += p1;
                 }
+                
+                var OC = (shadowA + shadowB) / 2;
+                Vector3 shadowR = OC.normalized * (R_2 / OC.magnitude);
+                Vector3 normal = Vector3.Cross(z, p1 - p0);
 
                 if (meshType == 0)
                 {
@@ -96,6 +111,18 @@ namespace Lighting2D
                         0, 3, 4,
                         1, 0, 4,
                         1, 4, 2,
+                    }, new Vector2[]{
+                        p0,
+                        p0,
+                        p0,
+                        p0,
+                        p0,
+                    }, new Vector2[]{
+                        p1,
+                        p1,
+                        p1,
+                        p1,
+                        p1,
                     });
                 }
                 else if (meshType == 1) // merge p0->p1 & p1->shadowB
@@ -109,6 +136,16 @@ namespace Lighting2D
                     }, new int[] {
                         0, 2, 3,
                         0, 3, 1
+                    }, new Vector2[]{
+                        p0,
+                        p0,
+                        p0,
+                        p0,
+                    }, new Vector2[]{
+                        p1,
+                        p1,
+                        p1,
+                        p1,
                     });
                 }
                 else if (meshType == 2) // merge shadowA->p0 & p0->p1
@@ -122,6 +159,16 @@ namespace Lighting2D
                     }, new int[] {
                         0, 2, 3,
                         0, 3, 1
+                    }, new Vector2[]{
+                        p0,
+                        p0,
+                        p0,
+                        p0,
+                    }, new Vector2[]{
+                        p1,
+                        p1,
+                        p1,
+                        p1,
                     });
                 }
                 else if (meshType == 3) // cross
@@ -137,6 +184,18 @@ namespace Lighting2D
                         0, 3, 4,
                         1, 0, 4,
                         1, 4, 2,
+                    }, new Vector2[]{
+                        p1,
+                        p1,
+                        p1,
+                        p1,
+                        p1,
+                    }, new Vector2[]{
+                        p0,
+                        p0,
+                        p0,
+                        p0,
+                        p0,
                     });
                 }
                 if(DebugShadow)
@@ -156,8 +215,10 @@ namespace Lighting2D
 
         List<Mesh> subShadowMesh = new List<Mesh>(256);
 
-        public void RenderShadow(CommandBuffer cmd)
+        public void RenderShadow(CommandBuffer cmd, RenderTargetIdentifier shadowMap)
         {
+            if(LightShadows == LightShadows.None)
+                return;
             if(shadowMat == null)
                 shadowMat = new Material(Shader.Find("Lighting2D/Shadow"));
             if (!ShadowMesh)
@@ -168,7 +229,7 @@ namespace Lighting2D
             //subShadowMesh.ForEach(mesh => mesh.Clear());
             //subShadowMesh.Clear();
             var meshBuilder = new MeshBuilder();
-            int count = Physics2D.OverlapCircleNonAlloc(transform.position, LightSize, shadowCasters);
+            int count = Physics2D.OverlapCircleNonAlloc(transform.position, LightDistance, shadowCasters);
             CombineInstance[] combineArr = new CombineInstance[count];
             for (var i = 0; i < count; i++)
             {
@@ -182,8 +243,20 @@ namespace Lighting2D
                 }
             }
             ShadowMesh = meshBuilder.ToMesh(ShadowMesh);
-            //ShadowMesh.CombineMeshes(combineArr.Where(combine => combine.mesh != null).ToArray());
-            cmd.DrawMesh(ShadowMesh, Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale), shadowMat);
+
+            if(LightShadows == LightShadows.Soft && ShadowSmooth == ShadowSmooth.VolumnLight)
+            {
+                cmd.SetGlobalFloat("_LightSize", LightVolumn);
+                cmd.DrawMesh(ShadowMesh, Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale), shadowMat, 0, 1);
+            }
+            else
+            {
+                cmd.DrawMesh(ShadowMesh, Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale), shadowMat, 0, 0);
+                if (LightShadows == LightShadows.Soft && ShadowSmooth == ShadowSmooth.Blur)
+                {
+                    GaussianBlur.Blur(SmoothRadius, cmd, shadowMap, shadowMap, LightSystem.Instance.gaussianMat);
+                }
+            }
         }
 
         private void OnDrawGizmos()
@@ -193,7 +266,7 @@ namespace Lighting2D
                 Gizmos.color = Color.yellow;
                 Gizmos.DrawWireSphere(transform.position, LightVolumn);
                 Gizmos.color = Color.gray;
-                Gizmos.DrawWireSphere(transform.position, LightSize);
+                Gizmos.DrawWireSphere(transform.position, LightDistance);
             }
         }
     }

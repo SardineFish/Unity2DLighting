@@ -4,7 +4,6 @@ Shader "GaussianBlur/Blur"
 	{
 		_MainTex("LightTexture", 2D) = "white" {}
         _Color("Color", Color) = (1, 1, 1, 1)
-        _BlurRadius("Blur Radius", Range(1, 256)) = 64
         _Gaussian("Gaussian", 2D) = "white" {}
 	}
 

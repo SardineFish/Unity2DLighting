@@ -32,6 +32,7 @@ Shader "Lighting2D/2DLight"
 			#pragma vertex vert
 			#pragma fragment frag
 			#include "UnityCG.cginc"
+			#include "2DLighting.cginc"
 			
 			struct appdata_t
 			{
@@ -52,8 +53,6 @@ Shader "Lighting2D/2DLight"
 			fixed4 _Color;
             float _Attenuation;
             float _Intensity;
-
-			sampler2D _ShadowMap;
 
 			v2f vert(appdata_t v)
 			{
@@ -96,7 +95,7 @@ Shader "Lighting2D/2DLight"
 
                 float3 color = illum * _Intensity * _Color;
 				i.shadowUV.xy /= i.shadowUV.w;
-				color = color * tex2D(_ShadowMap, i.shadowUV).rgb;
+				color = color * SAMPLE_SHADOW_2D(i.shadowUV).rgb;
 
 				return fixed4(color, 1.0);
 			}
