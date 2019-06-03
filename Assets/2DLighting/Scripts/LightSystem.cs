@@ -64,7 +64,6 @@ namespace Lighting2D
 
         public void RenderDeffer(Light2DProfile profile)
         {
-            
             var camera = profile.Camera;
             var cmd = profile.CommandBuffer;
             cmd.Clear();
@@ -107,7 +106,7 @@ namespace Lighting2D
             {
                 cmd.SetRenderTarget(shadowMap);
                 cmd.ClearRenderTarget(true, true, Color.black);
-                if(light.LightShadows != LightShadows.None)
+                if (light.LightShadows != LightShadows.None)
                 {
                     light.RenderShadow(cmd, shadowMap);
                 }

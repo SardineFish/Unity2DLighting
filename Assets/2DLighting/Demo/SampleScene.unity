@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.14901961, g: 0.14901961, b: 0.14901961, a: 1}
+  m_AmbientSkyColor: {r: 0, g: 0, b: 0, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -250,7 +250,7 @@ MonoBehaviour:
   ShadowSmooth: 2
   SmoothRadius: 4
   LightVolumn: 6.01
-  LightDistance: 20
+  LightDistance: 25.06
   DebugLight: 1
   DebugShadow: 0
   LightType: 0
@@ -267,7 +267,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 91880829}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.67, y: 10.24, z: -0.825073}
+  m_LocalPosition: {x: 6.22, y: 8.9, z: -0.825073}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -612,7 +612,7 @@ Mesh:
       format: 0
       dimension: 0
     m_DataSize: 128
-    _typelessdata: 0000a0c10000a0c1000000000000000000000000000080bf00000000000000000000a0410000a0c1000000000000000000000000000080bf0000803f000000000000a0c10000a041000000000000000000000000000080bf000000000000803f0000a0410000a041000000000000000000000000000080bf0000803f0000803f
+    _typelessdata: e17ac8c1e17ac8c1000000000000000000000000000080bf0000000000000000e17ac841e17ac8c1000000000000000000000000000080bf0000803f00000000e17ac8c1e17ac841000000000000000000000000000080bf000000000000803fe17ac841e17ac841000000000000000000000000000080bf0000803f0000803f
   m_CompressedMesh:
     m_Vertices:
       m_NumItems: 0

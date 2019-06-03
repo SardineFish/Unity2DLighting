@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Lighting2D
 {
@@ -9,18 +10,6 @@ namespace Lighting2D
     [RequireComponent(typeof(Camera))]
     public class Light2DRenderer : MonoBehaviour
     {
-
-        // Use this for initialization
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
         private void OnPreRender()
         {
             var camera = GetComponent<Camera>();

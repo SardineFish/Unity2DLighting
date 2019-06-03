@@ -1,5 +1,3 @@
-// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
 Shader "Lighting2D/2DLight"
 {
 	Properties
@@ -15,13 +13,11 @@ Shader "Lighting2D/2DLight"
 		Tags
 		{ 
 			"Queue"="Transparent" 
-			"IgnoreProjector"="True" 
 			"RenderType"="Transparent" 
 			"PreviewType"="Plane"
 			"CanUseSpriteAtlas"="True"
 		}
 
-		Cull Off
 		Lighting Off
 		ZWrite Off
 		Blend One One
