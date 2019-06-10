@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEditor;
 
-namespace Assets.Editor
+namespace Lighting2D.Editor
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
     class ButtonEditorHelper : UnityEditor.Editor

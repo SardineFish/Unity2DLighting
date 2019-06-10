@@ -4,24 +4,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class Singleton<T> : UnityEngine.MonoBehaviour where T:Singleton<T>
+namespace Lighting2D
 {
-    private static List<T> instances = new List<T>();
-    public static T Instance
+    public class Singleton<T> : UnityEngine.MonoBehaviour where T : Singleton<T>
     {
-        get
+        private static List<T> instances = new List<T>();
+        public static T Instance
         {
-            for(var i= instances.Count-1; i>=0;i--)
+            get
             {
-                if (instances[i] && instances[i].gameObject.scene != null)
-                    return instances[i];
+                for (var i = instances.Count - 1; i >= 0; i--)
+                {
+                    if (instances[i] && instances[i].gameObject.scene != null)
+                        return instances[i];
+                }
+                return null;
             }
-            return null;
         }
-    }
 
-    public Singleton() : base()
-    {
-        instances.Add(this as T);
+        public Singleton() : base()
+        {
+            instances.Add(this as T);
+        }
     }
 }

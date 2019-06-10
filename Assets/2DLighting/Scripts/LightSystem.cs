@@ -35,7 +35,7 @@ namespace Lighting2D
 
         }
 
-        [EditorButton("Reset")]
+        [Lighting2D.Editor.EditorButton("Reset")]
         public void Reset()
         {
             cameraProfiles.Clear();
@@ -100,17 +100,27 @@ namespace Lighting2D
             cmd.GetTemporaryRT(shadowMap, camera.pixelWidth / ShadowMapResolutionScale, camera.pixelHeight / ShadowMapResolutionScale, 0, ShadowMapFilterMode);
 
             cmd.SetRenderTarget(shadowMap);
+            cmd.ClearRenderTarget(true, true, Color.black);
+            cmd.SetRenderTarget(lightMap);
 
+            bool renderedShadow = false;
             var lights = GameObject.FindObjectsOfType<Light2D>();
             foreach (var light in lights)
             {
-                cmd.SetRenderTarget(shadowMap);
-                cmd.ClearRenderTarget(true, true, Color.black);
+                if(renderedShadow)
+                {
+                    cmd.SetRenderTarget(shadowMap);
+                    cmd.ClearRenderTarget(true, true, Color.black);
+                }
                 if (light.LightShadows != LightShadows.None)
                 {
+                    cmd.SetRenderTarget(shadowMap);
                     light.RenderShadow(cmd, shadowMap);
+                    renderedShadow = true;
+                    cmd.SetRenderTarget(lightMap);
                 }
-                cmd.SetRenderTarget(lightMap);
+                else
+                    renderedShadow = false;
                 light.RenderLight(cmd);
             }
 

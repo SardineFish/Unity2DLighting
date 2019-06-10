@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
-[System.AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
-public class EditorButtonAttribute : Attribute
+namespace Lighting2D.Editor
 {
-    public string Label { get; private set; }
-    public EditorButtonAttribute(string label = "")
+    [System.AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
+    public class EditorButtonAttribute : Attribute
     {
-        Label = label;
+        public string Label { get; private set; }
+        public EditorButtonAttribute(string label = "")
+        {
+            Label = label;
+        }
     }
+
 }
