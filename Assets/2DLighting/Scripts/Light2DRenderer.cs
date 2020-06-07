@@ -13,6 +13,7 @@ namespace Lighting2D
         private void OnPreRender()
         {
             var camera = GetComponent<Camera>();
+            Debug.Log(camera.name);
             var profile = LightSystem.Instance.SetupCamera(camera);
             LightSystem.Instance.RenderDeffer(profile);
         }

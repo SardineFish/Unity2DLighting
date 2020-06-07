@@ -7,7 +7,6 @@ using System.Linq;
 namespace Lighting2D
 {
     [ExecuteInEditMode]
-    [RequireComponent(typeof(MeshRenderer))]
     public class LightSystem : Singleton<LightSystem>
     {
         public bool PreviewInInspector = true;

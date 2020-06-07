@@ -7,7 +7,7 @@ public class GaussianBlur : MonoBehaviour
     {
         var blurTexture = Shader.PropertyToID("__GaussianBlurTexture");
         cmd.SetGlobalInt("_BlurRadius", radius);
-        cmd.GetTemporaryRT(blurTexture, -1, -1);
+        cmd.GetTemporaryRT(blurTexture, -1, -1, 0);
         cmd.SetGlobalVector("_BlurDirection", new Vector2(1, 0));
         cmd.Blit(src, blurTexture, material);
         cmd.SetGlobalVector("_BlurDirection", new Vector2(0, 1));
