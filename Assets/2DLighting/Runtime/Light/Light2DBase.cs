@@ -254,7 +254,7 @@ namespace Lighting2D
                 cmd.DrawMesh(ShadowMesh, Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale), shadowMat, 0, 0);
                 if (LightShadows == LightShadows.Soft && ShadowSmooth == ShadowSmooth.Blur)
                 {
-                    GaussianBlur.Blur(SmoothRadius, cmd, data.shadowmap, data.shadowmap, LightSystem.Instance.gaussianMat);
+                    GaussianBlur.Blur(SmoothRadius, cmd, data.shadowmap, data.shadowmap, ShaderPool.Get("GaussianBlur/Blur"));
                 }
             }
         }
