@@ -22,7 +22,7 @@ An implement of 2D lighting system in Unity.
 
 ## Usage
 
-See `/Assets/2D Lighting/Demo/SampleScene` for example
+See `/Assets/Demo/SampleScene` for example
 
 Simply put `/Assets/2D Lighting` folder into your project.
 
