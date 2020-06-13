@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace Lighting2D
 {
+    public interface ISingleton<T> where T : ISingleton<T>
+    {
+
+    }
+
     public class Singleton<T> : UnityEngine.MonoBehaviour where T : Singleton<T>
     {
         private static List<T> instances = new List<T>();

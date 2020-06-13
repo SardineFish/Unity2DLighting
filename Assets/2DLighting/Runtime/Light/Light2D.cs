@@ -70,18 +70,21 @@ namespace Lighting2D
             };
         }
 
-        public override void RenderLight(CommandBuffer cmd)
+        public override void RenderLight(CommandBuffer cmd, ref LightRenderingData data)
         {
-            if (!LightMaterial)
-                LightMaterial = new Material(Shader.Find("Lighting2D/AnalyticLight"));
-            LightMaterial.SetTexture("_MainTex", LightTexture);
-            LightMaterial.SetColor("_Color", LightColor);
-            LightMaterial.SetFloat("_Attenuation", Attenuation);
-            LightMaterial.SetFloat("_Intensity", Intensity);
+
+            cmd.SetRenderTarget(data.lightmap);
+
+            cmd.SetGlobalTexture("_MainTex", LightTexture);
+            cmd.SetGlobalColor("_Color", LightColor);
+            cmd.SetGlobalFloat("_Attenuation", Attenuation);
+            cmd.SetGlobalFloat("_Intensity", Intensity);
 
             cmd.SetGlobalVector("_2DLightPos", transform.position);
             cmd.SetGlobalFloat("_LightRange", LightDistance);
             cmd.SetGlobalFloat("_Intensity", Intensity);
+            cmd.SetGlobalTexture("_ShadowMap", data.shadowmap);
+            cmd.SetGlobalTexture("_LightCookie", LightTexture);
             var trs = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
             switch(LightType)
             {

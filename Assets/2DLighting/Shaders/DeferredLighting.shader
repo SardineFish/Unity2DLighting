@@ -23,7 +23,7 @@ Shader "Lighting2D/DeferredLighting"
 		Cull Off
 		Lighting Off
 		ZWrite Off
-		Blend One Zero
+		Blend DstColor Zero
 
 		Pass
 		{
@@ -42,6 +42,7 @@ Shader "Lighting2D/DeferredLighting"
 			sampler2D _LightMap;
 
 			float _ExposureLimit;
+			float3 _GlobalLight;
 
 			int _UseMSAA;
 			int _SceneView;
@@ -63,12 +64,12 @@ Shader "Lighting2D/DeferredLighting"
 				 	uv.y = 1 - uv.y;
 			#endif
 
-				float3 ambient = UNITY_LIGHTMODEL_AMBIENT;
+				float3 ambient = _GlobalLight;
 				float3 light = ambient + tex2D(_LightMap, i.texcoord).rgb;
 				if(_ExposureLimit >= 0)
 					light = clamp(light, 0, _ExposureLimit);
-                float3 color = light * tex2D(_MainTex, uv).rgb;
-				return fixed4(color, 1.0);
+                // float3 color = light * tex2D(_MainTex, uv).rgb;
+				return fixed4(light, 1.0);
 			}
 		ENDCG
 		}

@@ -9,6 +9,7 @@ namespace Lighting2D
     [ExecuteInEditMode]
     public class LightSystem : Singleton<LightSystem>
     {
+        public LightSystemSettings settings;
         public bool PreviewInInspector = true;
         public float ExposureLimit = -1;
         public Material LightingMaterial;
@@ -104,6 +105,14 @@ namespace Lighting2D
 
             bool renderedShadow = false;
             var lights = GameObject.FindObjectsOfType<Light2D>();
+            var data = new LightRenderingData()
+            {
+                camera = camera,
+                lightmap = lightMap,
+                shadowmap = shadowMap,
+                settings = this.settings,
+            };
+
             foreach (var light in lights)
             {
                 if(renderedShadow)
@@ -114,13 +123,13 @@ namespace Lighting2D
                 if (light.LightShadows != LightShadows.None)
                 {
                     cmd.SetRenderTarget(shadowMap);
-                    light.RenderShadow(cmd, shadowMap);
+                    light.RenderShadow(cmd, ref data);
                     renderedShadow = true;
                     cmd.SetRenderTarget(lightMap);
                 }
                 else
                     renderedShadow = false;
-                light.RenderLight(cmd);
+                light.RenderLight(cmd, ref data);
             }
 
             cmd.SetGlobalFloat("_ExposureLimit", ExposureLimit);

@@ -13,7 +13,7 @@ namespace Lighting2D
         DownSample,
         VolumnLight,
     }
-    public abstract class Light2DBase : MonoBehaviour
+    public abstract class Light2DBase : ManagedMonobehaviour<Light2DBase>
     {
         public LightShadows LightShadows = LightShadows.None;
         public ShadowSmooth ShadowSmooth = ShadowSmooth.Blur;
@@ -21,7 +21,7 @@ namespace Lighting2D
         public int SmoothRadius;
         public float LightVolumn = 1;
         public float LightDistance = 20;
-        public abstract void RenderLight(CommandBuffer cmd);
+        public abstract void RenderLight(CommandBuffer cmd, ref LightRenderingData data);
 
         public bool DebugLight;
 
@@ -215,7 +215,7 @@ namespace Lighting2D
 
         List<Mesh> subShadowMesh = new List<Mesh>(256);
 
-        public void RenderShadow(CommandBuffer cmd, RenderTargetIdentifier shadowMap)
+        public void RenderShadow(CommandBuffer cmd, ref LightRenderingData data)
         {
             if(LightShadows == LightShadows.None)
                 return;
@@ -254,7 +254,7 @@ namespace Lighting2D
                 cmd.DrawMesh(ShadowMesh, Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale), shadowMat, 0, 0);
                 if (LightShadows == LightShadows.Soft && ShadowSmooth == ShadowSmooth.Blur)
                 {
-                    GaussianBlur.Blur(SmoothRadius, cmd, shadowMap, shadowMap, LightSystem.Instance.gaussianMat);
+                    GaussianBlur.Blur(SmoothRadius, cmd, data.shadowmap, data.shadowmap, LightSystem.Instance.gaussianMat);
                 }
             }
         }

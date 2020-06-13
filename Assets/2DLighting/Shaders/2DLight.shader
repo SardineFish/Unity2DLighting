@@ -2,10 +2,6 @@ Shader "Lighting2D/2DLight"
 {
 	Properties
 	{
-		_MainTex("LightTexture", 2D) = "white" {}
-        _Color("Color", Color) = (1,1,1,1)
-        _Attenuation("Attenuation", Range(-1, 1)) = 1
-        _Intensity("Itensity", Float) = 1
 	}
 
 	SubShader
@@ -91,7 +87,7 @@ Shader "Lighting2D/2DLight"
 
                 float3 color = illum * _Intensity * _Color;
 				i.shadowUV.xy /= i.shadowUV.w;
-				color = color * SAMPLE_SHADOW_2D(i.shadowUV).rgb;
+				color = color * SAMPLE_SHADOW_2D(i.shadowUV);
 
 				return fixed4(color, 1.0);
 			}
@@ -123,7 +119,7 @@ Shader "Lighting2D/2DLight"
 				float4 shadowUV: TEXCOORD2;
 			};
 			
-			sampler2D _MainTex;
+			sampler2D _LightCookie;
 			fixed4 _Color;
             float _Attenuation;
             float _Intensity;
@@ -144,9 +140,9 @@ Shader "Lighting2D/2DLight"
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-                float3 color = tex2D(_MainTex, i.texcoord.xy) * _Intensity * _Color;
+                float3 color = tex2D(_LightCookie, i.texcoord.xy) * _Intensity * _Color;
 				i.shadowUV.xy /= i.shadowUV.w;
-				color = color * tex2D(_ShadowMap, i.shadowUV).rgb;
+				color = color * (1 - tex2D(_ShadowMap, i.shadowUV).r);
 
 				return fixed4(color, 1.0);
 			}
